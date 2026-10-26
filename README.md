@@ -108,11 +108,15 @@ python -m palworld_save_studio --mode gui --nocli
 
 ## 构建前端
 
+本项目使用 pnpm（版本固定在 `package.json` 的 `packageManager` 字段）：
+
 ```bash
 cd frontend
-npm install
-npm run build
+corepack pnpm install
+corepack pnpm build
 ```
+
+如果你已经全局安装 pnpm，直接 `pnpm install && pnpm build` 也可以。
 
 构建产物输出到 `frontend/dist`，需要复制到 `src/palworld_save_studio/webui/` 才能被后端加载。
 

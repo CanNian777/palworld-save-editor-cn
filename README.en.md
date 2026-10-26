@@ -103,11 +103,15 @@ Pick a save folder (must contain `Level.sav` and a `Players` directory), or use 
 
 ## Build the frontend
 
+This project uses pnpm (pinned via the `packageManager` field in `package.json`):
+
 ```bash
 cd frontend
-npm install
-npm run build
+corepack pnpm install
+corepack pnpm build
 ```
+
+If pnpm is already installed globally, `pnpm install && pnpm build` works too.
 
 Output goes to `frontend/dist`; copy it into `src/palworld_save_studio/webui/` for the backend to serve.
 
