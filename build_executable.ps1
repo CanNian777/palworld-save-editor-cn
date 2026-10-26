@@ -83,34 +83,36 @@ if (Test-Path '.\dist') { Remove-Item '.\dist' -Recurse -Force }
 & $VenvPython -m PyInstaller `
     --clean `
     --onefile `
-    --icon '.\icon.ico' `
+    --windowed `
+    --icon '.\src\palworld_save_studio\avatar.ico' `
     --add-data 'src/palworld_save_studio/assets/data;assets/data' `
     --add-data 'src/palworld_save_studio/assets/icons;assets/icons' `
     --add-data 'src/palworld_save_studio/webui;webui' `
+    --add-data 'src/palworld_save_studio/avatar.ico;.' `
     --hidden-import 'ooz' `
     --paths '.\src' `
-    --name 'Palworld-Save-Studio' `
+    --name 'PalworldSaveEditor' `
     --log-level INFO `
     '.\src\palworld_save_studio\__main__.py'
 Assert-NativeSuccess 'PyInstaller build'
 
-$Executable = '.\dist\Palworld-Save-Studio.exe'
+$Executable = '.\dist\PalworldSaveEditor.exe'
 if (-not (Test-Path $Executable)) { throw "Built executable not found: $Executable" }
 
 & $Executable --help | Out-Null
 Assert-NativeSuccess 'Windows executable smoke test'
 
 $Hash = (Get-FileHash -Algorithm SHA256 $Executable).Hash.ToLowerInvariant()
-Set-Content -Path '.\dist\Palworld-Save-Studio.exe.sha256' -Value "$Hash  Palworld-Save-Studio.exe" -Encoding ascii
+Set-Content -Path '.\dist\PalworldSaveEditor.exe.sha256' -Value "$Hash  PalworldSaveEditor.exe" -Encoding ascii
 
-$ArchiveRoot = '.\dist\Palworld-Save-Studio-Windows-x64'
-$Archive = '.\dist\Palworld-Save-Studio-Windows-x64.zip'
+$ArchiveRoot = '.\dist\PalworldSaveEditor-Windows-x64'
+$Archive = '.\dist\PalworldSaveEditor-Windows-x64.zip'
 New-Item -Path $ArchiveRoot -ItemType Directory | Out-Null
 Copy-Item -Path @(
     $Executable,
-    '.\dist\Palworld-Save-Studio.exe.sha256',
+    '.\dist\PalworldSaveEditor.exe.sha256',
     '.\README.md',
-    '.\README.zh-CN.md',
+    '.\README.en.md',
     '.\LICENSE',
     '.\NOTICE'
 ) -Destination $ArchiveRoot
@@ -118,7 +120,7 @@ Compress-Archive -Path "$ArchiveRoot\*" -DestinationPath $Archive -CompressionLe
 Remove-Item $ArchiveRoot -Recurse -Force
 
 $ArchiveHash = (Get-FileHash -Algorithm SHA256 $Archive).Hash.ToLowerInvariant()
-Set-Content -Path "$Archive.sha256" -Value "$ArchiveHash  Palworld-Save-Studio-Windows-x64.zip" -Encoding ascii
+Set-Content -Path "$Archive.sha256" -Value "$ArchiveHash  PalworldSaveEditor-Windows-x64.zip" -Encoding ascii
 Write-Host "Built $Executable"
 Write-Host "SHA-256: $Hash"
 Write-Host "Packaged $Archive"
