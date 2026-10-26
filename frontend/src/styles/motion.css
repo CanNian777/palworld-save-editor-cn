@@ -1,0 +1,270 @@
+/**
+ * 丝滑动效层。
+ *
+ * 全部基于 transition（状态迁移），不使用 animation（进入动画），
+ * 因此不会在重渲染时重播、不会闪。
+ *
+ * 内容：
+ *   1. 卡片/入口 hover 轻微上浮
+ *   2. 主按钮 hover 时高光扫过
+ *   3. 侧栏导航左侧指示条生长
+ *   4. 按下回弹
+ *   5. 输入聚焦光晕
+ */
+
+:root {
+  --ease-out: cubic-bezier(0.22, 0.9, 0.3, 1.15);
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ================= 基础过渡 ================= */
+button,
+.button,
+.act,
+.nav-item,
+.op,
+.pal-card,
+.cap,
+.btn-sm,
+.btn-full,
+.status-pill,
+.pill,
+.toggle {
+  transition:
+    transform 0.24s var(--ease-spring),
+    background-color 0.22s var(--ease-soft),
+    border-color 0.22s var(--ease-soft),
+    color 0.22s var(--ease-soft),
+    box-shadow 0.3s var(--ease-soft);
+}
+
+/* ================= 按下回弹 ================= */
+button:not(:disabled):active,
+.button:not(:disabled):active,
+.act:not(:disabled):active,
+.nav-item:active,
+.op:active,
+.pal-card:active,
+.cap:active,
+.btn-sm:active,
+.btn-full:active,
+.toggle:not(:disabled):active {
+  transform: scale(0.974);
+}
+
+.button.primary:not(:disabled):active,
+.act.primary:not(:disabled):active {
+  transform: scale(0.968);
+}
+
+/* ================= 卡片上浮 ================= */
+.pal-card:hover,
+.op:hover {
+  transform: translateY(-2px);
+}
+
+.pal-card:hover {
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+}
+
+.panel:hover {
+  border-color: rgba(255, 255, 255, 0.105);
+  transition: border-color 0.3s var(--ease-soft);
+}
+
+.pal-row {
+  position: relative;
+}
+
+.pal-row::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--cyan-300);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.22s var(--ease-spring);
+}
+
+.pal-row:hover::before {
+  transform: scaleY(1);
+}
+
+/* ================= 主按钮高光扫过 ================= */
+.button.primary,
+.act.primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.button.primary::after,
+.act.primary::after {
+  content: "";
+  position: absolute;
+  top: -20%;
+  left: 0;
+  width: 45%;
+  height: 140%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 50%,
+    transparent 100%
+  );
+  transform: translateX(-220%) skewX(-18deg);
+  transition: transform 0.62s var(--ease-spring);
+  pointer-events: none;
+}
+
+.button.primary:hover::after,
+.act.primary:hover::after {
+  transform: translateX(320%) skewX(-18deg);
+}
+
+/* ================= 导航指示条 ================= */
+.nav-item {
+  position: relative;
+}
+
+.nav-item::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 2px;
+  height: 16px;
+  margin-top: -8px;
+  border-radius: 2px;
+  background: var(--cyan-300);
+  transform: scaleY(0);
+  transform-origin: center;
+  transition: transform 0.24s var(--ease-spring);
+}
+
+.nav-item.active::before {
+  transform: scaleY(1);
+}
+
+.nav-item:hover::before {
+  transform: scaleY(0.55);
+}
+
+.nav-item.active:hover::before {
+  transform: scaleY(1);
+}
+
+/* ================= 输入聚焦 ================= */
+input,
+select,
+.field-select,
+.field-input {
+  transition:
+    border-color 0.22s var(--ease-soft),
+    background-color 0.22s var(--ease-soft),
+    box-shadow 0.22s var(--ease-soft);
+}
+
+input:focus,
+select:focus,
+.field-select:focus,
+.field-input:focus {
+  box-shadow: 0 0 0 3px rgba(87, 224, 176, 0.09);
+}
+
+/* ================= 开关滑块 ================= */
+.toggle span {
+  transition:
+    transform 0.26s var(--ease-spring),
+    background-color 0.2s var(--ease-soft);
+}
+
+/* ================= 点击波纹 ================= */
+button,
+.button,
+.act,
+.op,
+.pal-card,
+.pal-row,
+.cap,
+.btn-sm,
+.btn-full,
+.toggle {
+  overflow: hidden;
+}
+
+.tap-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0.1) 46%,
+    transparent 72%
+  );
+  transform: scale(0);
+  animation: tapRipple 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes tapRipple {
+  0% {
+    transform: scale(0);
+    opacity: 0.95;
+  }
+  60% {
+    opacity: 0.42;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+.button.primary .tap-ripple,
+.act.primary .tap-ripple {
+  background: radial-gradient(
+    circle,
+    rgba(0, 0, 0, 0.24) 0%,
+    rgba(0, 0, 0, 0.07) 50%,
+    transparent 74%
+  );
+}
+
+/* ================= 页面切换（原生 View Transitions） ================= */
+::view-transition-old(root) {
+  animation: vtOut 0.16s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: vtIn 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes vtOut {
+  to {
+    opacity: 0;
+    transform: scale(0.996);
+  }
+}
+
+@keyframes vtIn {
+  from {
+    opacity: 0;
+    transform: scale(1.004);
+  }
+}
+
+/* ================= 减少动效 ================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "palworld-save-studio"
-description = "A modern Windows save editor for Palworld 1.0."
+description = "幻兽帕鲁存档编辑器 1.0 — 基于 Palworld Save Studio 的离线存档编辑器"
 authors = [
     { name = "RayChen200318" },
 ]
@@ -12,7 +12,7 @@ keywords = ["palworld", "save-editor", "windows", "pal"]
 license = {file = "LICENSE"}
 requires-python = ">=3.11"
 readme = "README.md"
-version = "0.4.3b1"
+version = "1.0.0"
 dependencies = [
     "setuptools==80.9.0",
     "palworld-save-tools @ git+https://github.com/oMaN-Rod/palworld-save-tools.git@790e0bcf7bacef47b048e110066617a8fbb40041",

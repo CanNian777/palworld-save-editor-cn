@@ -1,0 +1,138 @@
+/**
+ * 统一材质覆盖层。
+ *
+ * 各页面里还残留着早期的「深蓝渐变 + 顶部光条 + 发光阴影」，
+ * 这里用一层收尾样式把它们拉回同一套扁平玻璃语言：
+ *   - 面板/卡片：单一半透明底色 + 1px 极淡边框，无阴影、无光条
+ *   - 交互：hover 只提亮底色，不做位移和发光
+ *   - 控件：统一 8px 圆角
+ *
+ * 使用 !important 是有意的：这些规则要盖过组件 scoped 样式里的硬编码值。
+ */
+
+/* ---------- 容器 ---------- */
+.panel,
+.pal-card,
+.action-card,
+.metric-grid article,
+.feature-card,
+.anomaly-card,
+.preview-card,
+.item-card,
+.tech-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: none !important;
+}
+
+.pal-card,
+.action-card,
+.metric-grid article,
+.feature-card,
+.item-card,
+.tech-card {
+  border-radius: var(--radius-md) !important;
+}
+
+/* 去掉卡片顶部那条渐变光 */
+.pal-card::before,
+.panel::before,
+.card::before {
+  display: none !important;
+}
+
+/* ---------- 交互 ---------- */
+.pal-card:hover,
+.action-card:hover,
+.feature-card:hover,
+.item-card:hover,
+.tech-card:hover,
+.metric-grid article:hover {
+  background: rgba(255, 255, 255, 0.055) !important;
+  border-color: var(--border-subtle) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ---------- 控件 ---------- */
+.button {
+  border-radius: var(--radius-sm) !important;
+  font-size: 12.5px !important;
+  min-height: 32px !important;
+  padding: 0 13px !important;
+  box-shadow: none !important;
+}
+
+.button.primary {
+  background: var(--cyan-300) !important;
+  border-color: transparent !important;
+  color: #04130e !important;
+  font-weight: 650 !important;
+}
+
+.button.primary:hover {
+  filter: brightness(1.06);
+  transform: none !important;
+}
+
+.field-select,
+.field-input,
+select,
+input[type='text'],
+input[type='number'] {
+  border-radius: var(--radius-sm) !important;
+  background: rgba(0, 0, 0, 0.22) !important;
+  border-color: var(--border-subtle) !important;
+  font-size: 12px !important;
+}
+
+.field-select:focus,
+.field-input:focus,
+select:focus,
+input[type='text']:focus,
+input[type='number']:focus {
+  border-color: rgba(87, 224, 176, 0.45) !important;
+  box-shadow: none !important;
+}
+
+/* ---------- 筛选条 ---------- */
+.filter-panel {
+  padding: 12px 14px !important;
+  border-radius: var(--radius-lg) !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  gap: 10px !important;
+}
+
+.filter-panel label > span,
+.field-label {
+  font-size: 10px !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--text-faint) !important;
+}
+
+.filter-panel .field-select {
+  height: 30px !important;
+}
+
+/* ---------- 侧栏世界卡 ---------- */
+.world-card {
+  background: var(--surface) !important;
+  border: 1px solid var(--border-subtle) !important;
+  box-shadow: none !important;
+  border-radius: var(--radius-md) !important;
+}
+
+/* ---------- 表格 ---------- */
+table {
+  border-collapse: collapse;
+}
+
+th {
+  font-size: 10px !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+  color: var(--text-faint) !important;
+}

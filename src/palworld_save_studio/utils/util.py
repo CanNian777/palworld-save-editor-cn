@@ -12,7 +12,56 @@ from palworld_save_studio.utils import LOGGER
 from flask import jsonify
 
 def reply(status, data=None, msg=None):
-    return jsonify({"status": status, "data": data, "msg": msg})
+    return jsonify({"status": status, "data": data, "msg": zh_message(msg) if status != 0 else msg})
+
+
+# ---------------------------------------------------------------- 错误文案中文化
+_MESSAGE_MAP = {
+    "BackupEnabled must be a boolean.": "BackupEnabled 必须是布尔值。",
+    "CharacterID is not an editable Palworld 1.0 species.": "该物种不是可编辑的 Palworld 1.0 物种。",
+    "Choose an owner before duplicating this object.": "复制前请先选择归属玩家。",
+    "Dedicated-server backups cannot be disabled.": "专用服务器模式的备份不能关闭。",
+    "Enabled must be a boolean.": "Enabled 必须是布尔值。",
+    "OwnerPlayerUId is invalid.": "所属玩家 ID 无效。",
+    "Permission denied while opening this directory.": "没有权限打开该目录。",
+    "SaveKind must be 'local' or 'dedicated'.": "存档类型必须是 local 或 dedicated。",
+    "The directory could not be opened.": "无法打开该目录。",
+    "The in-memory draft could not be discarded.": "无法丢弃内存中的草稿。",
+    "The item operation could not be completed.": "物品操作未能完成。",
+    "The offline item catalog could not be loaded.": "离线物品目录加载失败。",
+    "The owner's Palbox has no free slot.": "归属玩家的帕鲁箱子已满。",
+    "The Pal could not be updated.": "帕鲁更新失败。",
+    "The path does not exist or the network location is unavailable.": "路径不存在，或网络位置不可用。",
+    "The path must be an absolute directory.": "路径必须是绝对目录。",
+    "The player could not be updated.": "玩家更新失败。",
+    "The player's item inventory could not be loaded.": "玩家背包加载失败。",
+    "The save could not be committed.": "存档写入失败。",
+    "The save could not be validated.": "存档校验未通过，未写入任何文件。",
+    "The selected player's Palbox has no free slot.": "所选玩家的帕鲁箱子已满。",
+    "This object has no recoverable owner.": "该对象没有可恢复的归属玩家。",
+}
+
+_MESSAGE_PATTERNS = (
+    (r"^Pal (.+) was not found\.$", r"找不到帕鲁：\1"),
+    (r"^Pal (.+) could not be deleted\.$", r"帕鲁删除失败：\1"),
+    (r"^Player (.+) was not found\.$", r"找不到玩家：\1"),
+    (r"^Technology (.+) is unknown\.$", r"未知科技：\1"),
+    (r"^I18n code (.+) not available\.$", r"不支持的语言代码：\1"),
+    (r"^No Palworld save was found at: (.+)$", r"未在该路径找到帕鲁存档：\1（需要包含 Level.sav 的文件夹）"),
+)
+
+
+def zh_message(msg):
+    """把后端英文错误信息转成中文；未命中则原样返回。"""
+    if not msg or not isinstance(msg, str):
+        return msg
+    mapped = _MESSAGE_MAP.get(msg)
+    if mapped:
+        return mapped
+    for pattern, repl in _MESSAGE_PATTERNS:
+        if re.match(pattern, msg):
+            return re.sub(pattern, repl, msg)
+    return msg
 
 
 def _windows_drive_candidates() -> list[str]:

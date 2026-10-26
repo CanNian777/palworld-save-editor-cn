@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppIcon from '@/components/AppIcon.vue'
 import BrandLockup from '@/components/BrandLockup.vue'
@@ -116,43 +116,126 @@ async function openSave() {
   await Promise.all([catalog.load(), collection.loadPals(true), collection.loadPlayers(true)])
   router.push('/dashboard')
 }
+
+function worldName(path: string) {
+  if (!path) return ''
+  return path.split(/[\\/]/).filter(Boolean).at(-1) || path
+}
+
+onMounted(() => {
+  const el = document.querySelector<HTMLElement>('.glass-card')
+  if (!el) return
+  el.addEventListener('pointermove', (e) => {
+    const r = el.getBoundingClientRect()
+    el.style.setProperty('--mx', `${((e.clientX - r.left) / r.width) * 100}%`)
+    el.style.setProperty('--my', `${((e.clientY - r.top) / r.height) * 100}%`)
+  })
+})
 </script>
 
 <template>
   <div class="start-screen">
-    <header class="start-header"><BrandLockup /><div class="header-actions"><StatusPill tone="cyan">{{ copy.common.beta }}</StatusPill><LanguageToggle /></div></header>
-    <main class="start-main">
+    <div class="bg-layer" aria-hidden="true">
+      <span class="blob b1" /><span class="blob b2" /><span class="blob b3" /><span class="blob b4" />
+      <img class="bg-pal" src="/mock/pals/WorldTreeDragon.png" alt="" />
+      <span class="vignette" />
+    </div>
+
+    <header class="top-bar">
+      <BrandLockup />
+      <div class="bar-spacer" />
+      <StatusPill tone="cyan">{{ copy.common.beta }}</StatusPill>
+      <LanguageToggle />
+    </header>
+
+    <main class="stage">
       <section class="hero-copy">
-        <div class="eyebrow">{{ copy.start.eyebrow }}</div>
+        <div class="eyebrow-line"><span>{{ copy.start.eyebrow }}</span></div>
         <h1>{{ copy.start.title }}</h1>
         <p class="hero-intro">{{ copy.start.intro }}</p>
+
         <div class="hero-actions">
-          <button class="button primary start-button" type="button" @click="openBrowser"><AppIcon name="folder" />{{ copy.start.choose }}</button>
-          <button class="button ghost" type="button" @click="detectSave"><AppIcon name="search" />{{ copy.start.detect }}</button>
+          <button class="act primary wide" type="button" @click="openBrowser">
+            <AppIcon name="folder" :size="17" />
+            {{ copy.start.choose }}
+          </button>
+          <button class="act" type="button" @click="detectSave">
+            <AppIcon name="search" :size="17" />
+            {{ copy.start.detect }}
+          </button>
         </div>
-        <div class="warning-note"><AppIcon name="alert" :size="18" /><div><strong>{{ copy.start.gameExitTitle }}</strong><span>{{ copy.start.gameExitCopy }}</span></div></div>
+
+        <div class="warning-note">
+          <AppIcon name="alert" :size="15" />
+          <div>
+            <strong>{{ copy.start.gameExitTitle }}</strong>
+            <span>{{ copy.start.gameExitCopy }}</span>
+          </div>
+        </div>
       </section>
 
-      <section class="open-panel panel">
-        <div class="panel-glow" />
-        <div class="save-kind-selector" role="group" :aria-label="copy.start.saveKind">
-          <button type="button" :class="{ active: saveKind === 'local' }" :aria-pressed="saveKind === 'local'" @click="saveKind = 'local'"><AppIcon name="file" :size="17" /><span><strong>{{ copy.start.localSave }}</strong><small>{{ copy.start.localSaveHint }}</small></span></button>
-          <button type="button" :class="{ active: saveKind === 'dedicated' }" :aria-pressed="saveKind === 'dedicated'" @click="saveKind = 'dedicated'"><AppIcon name="server" :size="17" /><span><strong>{{ copy.start.dedicatedSave }}</strong><small>{{ copy.start.dedicatedSaveHint }}</small></span></button>
+      <section class="open-panel glass-card">
+        <img class="panel-art" src="/mock/pals/WorldTreeDragon.png" alt="" />
+        <span class="glow" />
+
+        <div class="kind-seg" role="group" :aria-label="copy.start.saveKind" :data-mode="saveKind">
+          <span class="thumb" />
+          <button type="button" :class="{ on: saveKind === 'local' }" :aria-pressed="saveKind === 'local'" @click="saveKind = 'local'">
+            {{ copy.start.localSave }}<small>{{ copy.start.localSaveHint }}</small>
+          </button>
+          <button type="button" :class="{ on: saveKind === 'dedicated' }" :aria-pressed="saveKind === 'dedicated'" @click="saveKind = 'dedicated'">
+            {{ copy.start.dedicatedSave }}<small>{{ copy.start.dedicatedSaveHint }}</small>
+          </button>
         </div>
-        <div class="preview-top"><span class="eyebrow">{{ copy.start.candidate }}</span><StatusPill :tone="candidatePath ? 'green' : 'neutral'" dot>{{ candidatePath ? 'Palworld 1.0' : '—' }}</StatusPill></div>
-        <div class="save-title-row"><div class="save-icon"><AppIcon name="file" :size="26" /></div><div><h2>{{ candidatePath ? (candidatePath.split(/[\\/]/).filter(Boolean).at(-1) || 'Palworld Save') : copy.nav.noWorld }}</h2><p>{{ candidatePath ? copy.start.compatible : copy.start.notSave }}</p></div></div>
-        <div class="path-box"><span>{{ copy.start.pathLabel }}</span><code>{{ candidatePath || '—' }}</code></div>
-        <p v-if="session.error" class="load-error"><AppIcon name="alert" :size="16" />{{ session.error }}</p>
-        <div class="preview-actions"><button class="button secondary" type="button" @click="openBrowser">{{ copy.start.browse }}</button><button class="button primary" type="button" :disabled="session.busy" @click="openSave">{{ session.busy ? copy.common.loading : copy.start.open }}<AppIcon name="arrow-right" :size="17" /></button></div>
+
+        <div class="candidate-row">
+          <b>{{ copy.start.candidate }}</b>
+          <span>{{ candidatePath ? '1' : '0' }}</span>
+          <span class="bar-spacer" />
+          <span class="badge" :class="{ off: !candidatePath }">{{ candidatePath ? 'Palworld 1.0' : '—' }}</span>
+        </div>
+
+        <div class="save-card" :class="{ empty: !candidatePath }">
+          <span class="save-icon"><AppIcon name="file" :size="23" /></span>
+          <div class="save-info">
+            <b>{{ candidatePath ? worldName(candidatePath) : copy.nav.noWorld }}</b>
+            <span>{{ candidatePath ? copy.start.compatible : copy.start.notSave }}</span>
+          </div>
+        </div>
+
+        <div class="path-row">
+          <AppIcon name="folder" :size="13" />
+          <code>{{ candidatePath || '—' }}</code>
+          <span class="bar-spacer" />
+          <button type="button" @click="openBrowser">{{ copy.start.browse }}</button>
+        </div>
+
+        <p v-if="session.error" class="load-error"><AppIcon name="alert" :size="15" />{{ session.error }}</p>
+
+        <div class="panel-actions">
+          <button class="act" type="button" @click="openBrowser">{{ copy.start.browse }}</button>
+          <button class="act primary wide" type="button" :disabled="session.busy" @click="openSave">
+            {{ session.busy ? copy.common.loading : copy.start.open }}
+            <AppIcon name="arrow-right" :size="16" />
+          </button>
+        </div>
       </section>
     </main>
 
-    <section class="feature-section">
-      <div class="feature-title"><span class="eyebrow">{{ copy.start.featuresTitle }}</span></div>
-      <div class="feature-grid">
-        <article v-for="(name, index) in copy.start.featureNames" :key="name" class="feature-card"><span><AppIcon :name="featureIcons[index]" :size="20" /></span><div><strong>{{ name }}</strong><p>{{ copy.start.featureCopy[index] }}</p></div></article>
-      </div>
+    <section class="caps">
+      <span class="caps-lead">{{ copy.start.featuresTitle }}</span>
+      <span v-for="(name, index) in copy.start.featureNames" :key="name" class="cap" :data-i="index">
+        <i /><AppIcon :name="featureIcons[index]" :size="14" />{{ name }}
+      </span>
     </section>
+
+    <footer class="start-foot">
+      <span>{{ copy.start.compatible }}</span>
+      <span class="dot-sep" />
+      <span>{{ copy.start.featuresTitle }}</span>
+      <span class="bar-spacer" />
+      <code>PlM · Oodle</code>
+    </footer>
 
     <ModalDialog :open="browserOpen" :title="copy.start.browseTitle" width="760px" @close="browserOpen = false">
       <div class="browser-roots"><span>{{ copy.start.locations }}</span><div class="root-list"><button v-for="root in browser?.roots" :key="root" type="button" :class="{ active: isActiveRoot(root) }" :aria-pressed="isActiveRoot(root)" :disabled="browserBusy" @click="browseTo(root)">{{ rootLabel(root) }}</button></div></div>
@@ -170,15 +253,246 @@ async function openSave() {
 </template>
 
 <style scoped>
-.start-screen{position:relative;min-height:100vh;overflow:hidden;background:radial-gradient(circle at 78% 20%,rgba(53,230,209,.14),transparent 30%),radial-gradient(circle at 18% 88%,rgba(139,124,255,.12),transparent 32%),linear-gradient(145deg,#080b14,#0c1220 58%,#080b14)}
-.start-screen:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.16;background-image:linear-gradient(rgba(164,188,221,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(164,188,221,.08) 1px,transparent 1px);background-size:56px 56px;mask-image:linear-gradient(to right,transparent,black 48%,transparent)}
-.start-header{position:relative;z-index:3;height:68px;max-width:1480px;margin:0 auto;padding:0 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-subtle);background:rgba(8,11,20,.34);backdrop-filter:blur(var(--glass-blur))}.header-actions{display:flex;align-items:center;gap:10px}
-.start-main{position:relative;z-index:2;max-width:1420px;margin:0 auto;padding:30px 48px 22px;display:grid;grid-template-columns:minmax(390px,.85fr) minmax(480px,1.15fr);align-items:center;gap:48px}.hero-copy h1{max-width:620px;margin:12px 0 14px;color:var(--text-strong);font-size:40px;line-height:1.12;letter-spacing:-.045em;font-weight:750}.hero-intro{max-width:580px;margin:0;color:var(--text-muted);font-size:15px;line-height:1.65}.hero-actions{display:flex;align-items:center;gap:10px;margin-top:20px}.start-button{min-height:44px;padding:0 20px}.warning-note{max-width:540px;margin-top:18px;padding:12px 14px;display:flex;align-items:flex-start;gap:11px;border:1px solid rgba(242,198,109,.18);border-left:3px solid var(--gold-300);border-radius:9px;background:rgba(242,198,109,.06);color:var(--gold-300)}.warning-note div{display:flex;flex-direction:column;gap:3px}.warning-note strong{font-size:13px}.warning-note span{color:var(--text-muted);font-size:13px;line-height:1.5}
-.open-panel{position:relative;padding:22px;overflow:hidden;box-shadow:var(--shadow-float)}.panel-glow{position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,transparent,var(--cyan-300),var(--violet-300),transparent)}.preview-top{display:flex;align-items:center;justify-content:space-between}.save-title-row{display:flex;align-items:center;gap:16px;margin:22px 0 18px}.save-icon{width:58px;height:58px;display:grid;place-items:center;border:1px solid rgba(53,230,209,.24);border-radius:14px;background:linear-gradient(145deg,rgba(53,230,209,.12),rgba(139,124,255,.1));color:var(--cyan-300)}.save-title-row h2{margin:0 0 5px;color:var(--text-strong);font-size:18px}.save-title-row p{margin:0;color:var(--text-muted);font-size:13px}.path-box,.browser-path{padding:13px 14px;border:1px solid var(--border-subtle);border-radius:10px;background:rgba(5,9,17,.56)}.path-box span,.browser-path span{display:block;margin-bottom:6px;color:var(--text-faint);font-size:12px;font-weight:700}.path-box code,.browser-path code{display:block;overflow:hidden;color:var(--text-muted);font-size:11px;white-space:nowrap;text-overflow:ellipsis}.preview-actions{margin-top:20px;display:flex;justify-content:flex-end;gap:10px}.load-error{display:flex;gap:8px;margin:12px 0 0;color:var(--red-300);font-size:13px;line-height:1.5}.button:disabled{opacity:.42;cursor:not-allowed;transform:none}
-.save-kind-selector{margin:2px 0 18px;display:grid;grid-template-columns:1fr 1fr;gap:8px}.save-kind-selector button{min-width:0;padding:11px 12px;display:flex;align-items:center;gap:10px;border:1px solid var(--border-subtle);border-radius:10px;background:var(--surface-soft);color:var(--text-muted);font:inherit;text-align:left;cursor:pointer}.save-kind-selector button.active{border-color:var(--violet-300);background:var(--surface-selected);color:var(--cyan-200)}.save-kind-selector span{min-width:0}.save-kind-selector strong,.save-kind-selector small{display:block}.save-kind-selector strong{color:var(--text-strong);font-size:13px}.save-kind-selector small{margin-top:3px;overflow:hidden;color:var(--text-faint);font-size:11px;white-space:nowrap;text-overflow:ellipsis}
-.feature-section{position:relative;z-index:2;max-width:1420px;margin:0 auto;padding:4px 48px 28px}.feature-title{margin-bottom:10px}.feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.feature-card{min-height:82px;padding:13px 14px;display:flex;align-items:flex-start;gap:12px;border:1px solid var(--border-subtle);border-radius:12px;background:rgba(20,30,48,.66);backdrop-filter:blur(10px)}.feature-card:hover{border-color:rgba(139,124,255,.32);background:rgba(20,30,48,.82);transform:translateY(-1px)}.feature-card>span{width:38px;height:38px;flex:0 0 38px;display:grid;place-items:center;border-radius:10px;background:linear-gradient(145deg,rgba(53,230,209,.12),rgba(139,124,255,.1));color:var(--cyan-300)}.feature-card strong{display:block;color:var(--text-strong);font-size:15px}.feature-card p{margin:4px 0 0;color:var(--text-muted);font-size:13px;line-height:1.45}
-.browser-roots{margin-bottom:12px}.browser-roots>span,.direct-path label>span{display:block;margin-bottom:6px;color:var(--text-faint);font-size:12px;font-weight:700}.root-list{display:flex;flex-wrap:wrap;gap:7px}.root-list button{min-width:58px;height:36px;padding:0 11px;border:1px solid var(--border-subtle);border-radius:8px;background:var(--surface-soft);color:var(--text-muted);font:inherit;font-size:13px;font-weight:750;cursor:pointer}.root-list button:hover{border-color:var(--border-bright);color:var(--cyan-200)}.root-list button.active{border-color:var(--violet-300);background:var(--surface-selected);color:var(--cyan-200)}.root-list button:disabled{opacity:.45;cursor:not-allowed}.direct-path{margin-bottom:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}.direct-path input{width:100%;height:40px;padding:0 11px;border:1px solid var(--border-subtle);border-radius:9px;outline:0;background:rgba(5,9,17,.58);color:var(--text);font:inherit;font-size:14px}.direct-path input:focus{border-color:var(--cyan-300);box-shadow:0 0 0 2px rgba(53,230,209,.08)}.direct-path .button{height:40px}.browser-error{margin:0 0 12px;padding:9px 11px;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,122,138,.26);border-radius:9px;background:rgba(232,91,112,.09);color:var(--red-300);font-size:13px;line-height:1.45}.browser-tools{display:flex;align-items:center;justify-content:space-between;margin:14px 0}.folder-list{height:280px;overflow:auto;border:1px solid var(--border-subtle);border-radius:12px;background:rgba(5,9,17,.42)}.folder-list button{width:100%;height:46px;padding:0 14px;display:flex;align-items:center;gap:10px;border:0;border-bottom:1px solid var(--border-subtle);background:transparent;color:var(--text);font-size:14px;text-align:left;cursor:pointer}.folder-list button:hover{background:var(--surface-hover);color:var(--cyan-200)}.folder-list button:disabled{opacity:.45;cursor:not-allowed}.folder-list button span{flex:1}.folder-list p{padding:24px;color:var(--text-muted);font-size:13px;text-align:center}
-@media(max-width:1366px){.start-header{padding:0 32px}.start-main{padding:24px 36px 18px;grid-template-columns:minmax(350px,.8fr) minmax(440px,1.2fr);gap:34px}.feature-section{padding:2px 36px 24px}.feature-card{min-height:78px}}
-@media(max-height:780px){.start-main{padding-top:18px;padding-bottom:14px}.hero-copy h1{margin-top:8px;margin-bottom:10px}.hero-actions{margin-top:14px}.warning-note{margin-top:12px;padding-top:9px;padding-bottom:9px}.feature-card{min-height:72px}.feature-section{padding-bottom:18px}.folder-list{height:192px}}
-@media(max-width:720px){.direct-path{grid-template-columns:1fr}.direct-path .button{width:100%}}
+/* ================= 底层背景 ================= */
+.start-screen{
+  position:relative; min-height:100vh; overflow:hidden; isolation:isolate;
+  color:#f6fafd;
+  background:radial-gradient(120% 90% at 22% 8%, #12242e 0%, #0a0f16 42%, #04060a 100%);
+  display:flex; flex-direction:column;
+}
+.bg-layer{position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none}
+.blob{position:absolute; border-radius:50%; filter:blur(110px); mix-blend-mode:screen; will-change:transform}
+.b1{width:62vw;height:62vw;left:-18vw;top:-24vw;background:radial-gradient(circle,#23b98d,transparent 66%);opacity:.55;animation:drift1 26s ease-in-out infinite}
+.b2{width:54vw;height:54vw;right:-16vw;top:-16vw;background:radial-gradient(circle,#3a7dff,transparent 64%);opacity:.44;animation:drift2 33s ease-in-out infinite}
+.b3{width:56vw;height:56vw;left:20vw;bottom:-38vw;background:radial-gradient(circle,#8b5cf6,transparent 68%);opacity:.36;animation:drift3 41s ease-in-out infinite}
+.b4{width:36vw;height:36vw;right:4vw;bottom:-18vw;background:radial-gradient(circle,#ff8fb0,transparent 70%);opacity:.22;animation:drift1 30s ease-in-out infinite reverse}
+@keyframes drift1{0%,100%{transform:translate3d(0,0,0) scale(1)}50%{transform:translate3d(4vw,3vw,0) scale(1.08)}}
+@keyframes drift2{0%,100%{transform:translate3d(0,0,0) scale(1.05)}50%{transform:translate3d(-5vw,4vw,0) scale(.94)}}
+@keyframes drift3{0%,100%{transform:translate3d(0,0,0) scale(.97)}50%{transform:translate3d(3vw,-4vw,0) scale(1.1)}}
+.bg-pal{
+  position:absolute; left:-6vw; bottom:-10vw; width:62vw; height:62vw; object-fit:contain;
+  opacity:.09; filter:blur(6px) saturate(1.1);
+  -webkit-mask-image:radial-gradient(circle at 42% 46%, #000 26%, transparent 70%);
+  mask-image:radial-gradient(circle at 42% 46%, #000 26%, transparent 70%);
+}
+.vignette{position:absolute;inset:0;background:radial-gradient(120% 90% at 50% 42%, transparent 42%, rgba(0,0,0,.55) 100%)}
+
+/* ================= 玻璃 ================= */
+.glass-card{
+  position:relative; border-radius:40px; overflow:hidden; isolation:isolate;
+  background:linear-gradient(158deg, rgba(255,255,255,.115), rgba(255,255,255,.045) 46%, rgba(255,255,255,.075));
+  backdrop-filter:blur(40px) saturate(180%);
+  -webkit-backdrop-filter:blur(40px) saturate(180%);
+  box-shadow:0 40px 100px rgba(0,0,0,.62), inset 0 1px 0 rgba(255,255,255,.26), inset 0 -1px 0 rgba(255,255,255,.05);
+}
+.glass-card::before{
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; z-index:2;
+  background:linear-gradient(180deg, rgba(255,255,255,.19), rgba(255,255,255,0) 22%);
+}
+.glass-card::after{
+  content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; z-index:3; padding:1px;
+  background:conic-gradient(from 160deg at 50% 0%,
+    rgba(92,238,192,.55), rgba(98,204,255,.35) 22%, transparent 42%,
+    transparent 62%, rgba(179,156,255,.42) 80%, rgba(255,156,194,.4) 100%);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite:xor; mask-composite:exclude; opacity:.75;
+}
+.panel-art{
+  position:absolute; right:-44px; top:-52px; width:300px; height:300px; object-fit:contain;
+  opacity:.13; pointer-events:none; z-index:0;
+  -webkit-mask-image:radial-gradient(circle at 58% 42%, #000 22%, transparent 68%);
+  mask-image:radial-gradient(circle at 58% 42%, #000 22%, transparent 68%);
+}
+.glow{
+  position:absolute; inset:0; pointer-events:none; border-radius:inherit; z-index:1;
+  background:radial-gradient(520px circle at var(--mx,50%) var(--my,0%), rgba(255,255,255,.14), transparent 58%);
+  opacity:0; transition:opacity .45s ease;
+}
+.glass-card:hover .glow{opacity:1}
+
+/* ================= 顶栏 ================= */
+.top-bar{
+  position:relative; z-index:5; display:flex; align-items:center; gap:12px;
+  padding:20px 46px 6px;
+}
+.bar-spacer{flex:1}
+
+/* ================= 主体 ================= */
+.stage{
+  position:relative; z-index:4; flex:1;
+  width:min(1220px,100%); margin:0 auto; padding:14px 46px 6px;
+  display:grid; grid-template-columns:1fr 1.02fr; gap:44px; align-items:center;
+}
+.eyebrow-line{display:flex;align-items:center;gap:9px;margin-bottom:16px}
+.eyebrow-line::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,#5ceec0,transparent)}
+.eyebrow-line span{font-size:10px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:#5ceec0}
+.hero-copy h1{
+  margin:0 0 16px; font-size:44px; line-height:1.08; font-weight:760; letter-spacing:-.042em;
+  background:linear-gradient(178deg,#ffffff 24%,#c6d6e2 68%,#8fa4b3);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+  white-space:pre-line;
+}
+.hero-intro{margin:0 0 22px; max-width:400px; color:#8593a5; font-size:13px; line-height:1.72}
+.hero-actions{display:flex; gap:11px; margin-bottom:18px}
+
+/* ================= 按钮 ================= */
+.act{
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  height:47px; padding:0 20px; border:1px solid rgba(255,255,255,.11);
+  border-radius:15px; background:rgba(255,255,255,.085); color:#f6fafd;
+  font:inherit; font-size:13.5px; font-weight:620; cursor:pointer; white-space:nowrap;
+  transition:transform .24s cubic-bezier(.22,.9,.3,1.2), background .24s, box-shadow .24s;
+}
+.act:hover{background:rgba(255,255,255,.15); transform:translateY(-1px)}
+.act.primary{
+  border-color:transparent; color:#03140f;
+  background:linear-gradient(158deg,#7cf5cd,#5ceec0 46%,#2ec495);
+  box-shadow:0 16px 40px rgba(92,238,192,.34), inset 0 1px 0 rgba(255,255,255,.6);
+}
+.act.primary:hover{filter:brightness(1.05); transform:translateY(-2px); box-shadow:0 22px 50px rgba(92,238,192,.42), inset 0 1px 0 rgba(255,255,255,.6)}
+.act.wide{flex:1}
+.act:disabled{opacity:.45; cursor:not-allowed; transform:none}
+
+.warning-note{
+  display:flex; align-items:flex-start; gap:10px; max-width:412px; padding:12px 14px;
+  border:1px solid rgba(255,207,125,.26); border-radius:15px;
+  background:linear-gradient(158deg, rgba(255,207,125,.15), rgba(255,207,125,.045));
+  color:#ffcf7d; backdrop-filter:blur(18px);
+}
+.warning-note div{display:flex;flex-direction:column;gap:2px}
+.warning-note strong{font-size:12px}
+.warning-note span{color:#ffdfae; font-size:11px; line-height:1.6}
+
+/* ================= 面板内容 ================= */
+.open-panel{
+  padding:24px; display:flex; flex-direction:column;
+}
+.open-panel > *:not(.panel-art):not(.glow){position:relative;z-index:4}
+
+.kind-seg{
+  position:relative; display:grid; grid-template-columns:1fr 1fr; gap:4px;
+  padding:4px; margin-bottom:18px; border-radius:16px;
+  background:rgba(0,0,0,.32); border:1px solid rgba(255,255,255,.08);
+}
+.thumb{
+  position:absolute; top:4px; left:4px; width:calc(50% - 4px); height:calc(100% - 8px);
+  border-radius:13px; background:linear-gradient(158deg, rgba(255,255,255,.26), rgba(255,255,255,.11));
+  box-shadow:0 8px 22px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.5);
+  transition:transform .34s cubic-bezier(.22,.9,.3,1.2);
+}
+.kind-seg[data-mode="dedicated"] .thumb{transform:translateX(100%)}
+.kind-seg button{
+  position:relative; z-index:2; height:42px; border:0; border-radius:13px; background:transparent;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px;
+  font:inherit; font-size:12.5px; font-weight:640; color:#8593a5; cursor:pointer; transition:color .25s;
+}
+.kind-seg button small{font-size:9px; font-weight:500; color:#8593a5; letter-spacing:.01em}
+.kind-seg button.on{color:#f6fafd}
+
+.candidate-row{display:flex; align-items:baseline; gap:9px; margin-bottom:12px}
+.candidate-row b{font-size:11.5px;font-weight:650;color:#c2cdda}
+.candidate-row > span:not(.bar-spacer){font-size:10.5px;color:#8593a5}
+.badge{
+  font-size:9.5px; font-weight:650; padding:3px 8px; border-radius:7px;
+  background:rgba(92,238,192,.15); color:#5ceec0; border:1px solid rgba(92,238,192,.24);
+}
+.badge.off{background:rgba(255,255,255,.06); color:#8593a5; border-color:rgba(255,255,255,.08)}
+
+.save-card{
+  display:flex; align-items:center; gap:14px; padding:16px 17px; border-radius:26px; cursor:pointer;
+  background:linear-gradient(158deg, rgba(92,238,192,.16), rgba(92,238,192,.04));
+  border:1px solid rgba(92,238,192,.3);
+  box-shadow:0 14px 38px rgba(35,185,141,.16), inset 0 1px 0 rgba(255,255,255,.26);
+  transition:transform .28s cubic-bezier(.22,.9,.3,1.2), box-shadow .28s;
+}
+.save-card:hover{transform:translateY(-2px); box-shadow:0 22px 54px rgba(35,185,141,.24), inset 0 1px 0 rgba(255,255,255,.3)}
+.save-card.empty{background:rgba(255,255,255,.05); border-color:rgba(255,255,255,.08); box-shadow:none}
+.save-icon{
+  width:50px; height:50px; flex:0 0 50px; border-radius:17px; display:grid; place-items:center;
+  background:linear-gradient(150deg,#8dfad6,#5ceec0 45%,#12866a); color:#03140f;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55), 0 10px 24px rgba(0,0,0,.32);
+}
+.empty .save-icon{background:rgba(255,255,255,.08); color:#8593a5; box-shadow:none}
+.save-info{min-width:0}
+.save-info b{display:block; font-family:ui-monospace,"Cascadia Mono",Consolas,monospace; font-size:14px; font-weight:670; color:#f6fafd; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.save-info span{display:block; margin-top:4px; font-size:10.5px; color:#8593a5}
+
+.path-row{
+  display:flex; align-items:center; gap:9px; margin-top:14px; padding:9px 12px;
+  border-radius:13px; background:rgba(0,0,0,.28); border:1px solid rgba(255,255,255,.07);
+  color:#8593a5; font-size:10.5px;
+}
+.path-row code{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace; font-size:10px; color:#c2cdda; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.path-row button{border:0;background:transparent;color:#c2cdda;font:inherit;font-size:10.5px;padding:3px 8px;border-radius:7px;cursor:pointer;transition:.2s}
+.path-row button:hover{background:rgba(255,255,255,.1)}
+
+.load-error{display:flex;align-items:center;gap:8px;margin:12px 0 0;color:#ff9cc2;font-size:12px}
+
+.panel-actions{display:flex; gap:11px; margin-top:17px}
+
+/* ================= 能力标签 ================= */
+.caps{
+  position:relative; z-index:4; width:min(1220px,100%); margin:0 auto;
+  padding:16px 46px 0; display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+}
+.caps-lead{font-size:10px;font-weight:650;letter-spacing:.16em;text-transform:uppercase;color:#8593a5;margin-right:4px}
+.cap{
+  display:inline-flex; align-items:center; gap:7px; height:31px; padding:0 12px;
+  border-radius:999px; font-size:11px; color:#c2cdda;
+  background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.075);
+  backdrop-filter:blur(16px); transition:.22s;
+}
+.cap:hover{background:rgba(255,255,255,.11);border-color:rgba(255,255,255,.14);transform:translateY(-1px)}
+.cap i{width:5px;height:5px;border-radius:50%;flex-shrink:0;background:#5ceec0}
+.cap[data-i="1"] i{background:#62ccff}
+.cap[data-i="2"] i{background:#b39cff}
+.cap[data-i="3"] i{background:#ffcf7d}
+.cap[data-i="4"] i{background:#ff9cc2}
+.cap[data-i="5"] i{background:#9fe0ff}
+
+/* ================= 底部 ================= */
+.start-foot{
+  position:relative; z-index:4; width:min(1220px,100%); margin:0 auto;
+  padding:14px 46px 20px; display:flex; align-items:center; gap:10px;
+  font-size:10px; color:#8593a5; opacity:.85;
+}
+.start-foot code{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:9.5px}
+.dot-sep{width:3px;height:3px;border-radius:50%;background:#8593a5;opacity:.55}
+
+/* ================= 模态框（沿用原结构，微调配色） ================= */
+.browser-roots{margin-bottom:12px}
+.browser-roots>span,.direct-path label>span{display:block;margin-bottom:6px;color:var(--text-faint);font-size:12px;font-weight:700}
+.root-list{display:flex;flex-wrap:wrap;gap:7px}
+.root-list button{min-width:58px;height:36px;padding:0 11px;border:1px solid rgba(255,255,255,.12);border-radius:8px;background:rgba(255,255,255,.06);color:#c2cdda;font:inherit;font-size:13px;font-weight:750;cursor:pointer}
+.root-list button:hover{border-color:rgba(92,238,192,.45);color:#5ceec0}
+.root-list button.active{border-color:rgba(179,156,255,.5);background:rgba(179,156,255,.14);color:#b39cff}
+.root-list button:disabled{opacity:.45;cursor:not-allowed}
+.direct-path{margin-bottom:12px;display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:8px}
+.direct-path input{width:100%;height:40px;padding:0 11px;border:1px solid rgba(255,255,255,.12);border-radius:9px;outline:0;background:rgba(0,0,0,.35);color:#f6fafd;font:inherit;font-size:14px}
+.direct-path input:focus{border-color:rgba(92,238,192,.55);box-shadow:0 0 0 3px rgba(92,238,192,.12)}
+.direct-path .button{height:40px}
+.browser-error{margin:0 0 12px;padding:9px 11px;display:flex;align-items:center;gap:8px;border:1px solid rgba(255,156,194,.26);border-radius:9px;background:rgba(255,156,194,.09);color:#ff9cc2;font-size:13px;line-height:1.45}
+.browser-tools{display:flex;align-items:center;justify-content:space-between;margin:14px 0}
+.folder-list{height:280px;overflow:auto;border:1px solid rgba(255,255,255,.1);border-radius:12px;background:rgba(0,0,0,.3)}
+.folder-list button{width:100%;height:46px;padding:0 14px;display:flex;align-items:center;gap:10px;border:0;border-bottom:1px solid rgba(255,255,255,.07);background:transparent;color:#f6fafd;font:inherit;font-size:14px;text-align:left;cursor:pointer}
+.folder-list button:hover{background:rgba(92,238,192,.09);color:#5ceec0}
+.folder-list button:disabled{opacity:.45;cursor:not-allowed}
+.folder-list button span{flex:1}
+.folder-list>p{margin:0;padding:24px;color:#8593a5;font-size:13px;text-align:center}
+
+/* ================= 响应式 ================= */
+@media (max-width:1280px){
+  .top-bar,.caps,.start-foot{padding-left:32px;padding-right:32px}
+  .stage{padding:14px 32px 6px;gap:34px}
+  .hero-copy h1{font-size:38px}
+}
+@media (max-width:1040px){
+  .stage{grid-template-columns:1fr;gap:26px}
+  .start-screen{overflow:auto}
+}
+@media (max-height:820px){
+  .hero-copy h1{font-size:36px}
+  .open-panel{padding:20px}
+  .caps{padding-top:12px}
+}
 </style>

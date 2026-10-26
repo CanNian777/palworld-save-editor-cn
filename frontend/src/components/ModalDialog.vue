@@ -18,14 +18,98 @@ defineEmits<{ close: [] }>()
 </template>
 
 <style scoped>
-.modal-backdrop{position:fixed;inset:0;z-index:100;background:rgba(3,5,10,.78);backdrop-filter:blur(10px);display:grid;place-items:center;padding:24px}
-.modal-card{width:100%;max-height:calc(100dvh - 48px);display:grid;grid-template-rows:auto minmax(0,1fr) auto;border:1px solid var(--border-violet);border-radius:14px;background:linear-gradient(150deg,rgba(20,30,48,.97),rgba(8,11,20,.98));box-shadow:var(--shadow-float);overflow:hidden}
-header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid var(--border-subtle)}
-h2{font-size:18px;margin:0;color:var(--text-strong)}
-header button{width:34px;height:34px;border:0;border-radius:8px;background:var(--surface-soft);color:var(--text-muted);font-size:22px;line-height:1;cursor:pointer}
-header button:hover{background:var(--surface-hover);color:var(--text-strong)}
-.modal-body{min-height:0;padding:20px;overflow:auto}.modal-card footer{display:flex;justify-content:flex-end;gap:10px;padding:15px 20px 18px;border-top:1px solid var(--border-subtle)}
-.modal-enter-active,.modal-leave-active{transition:opacity .18s ease}.modal-enter-active .modal-card,.modal-leave-active .modal-card{transition:transform .18s ease}
-.modal-enter-from,.modal-leave-to{opacity:0}.modal-enter-from .modal-card,.modal-leave-to .modal-card{transform:translateY(8px) scale(.985)}
-@media(max-width:720px){.modal-backdrop{padding:16px}.modal-card{max-height:calc(100dvh - 32px)}}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: rgba(4, 6, 9, 0.72);
+  backdrop-filter: blur(14px) saturate(120%);
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+.modal-card {
+  width: 100%;
+  max-height: calc(100dvh - 48px);
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: #0d1116;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+}
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+h2 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 13.5px;
+  font-weight: 640;
+  letter-spacing: -0.01em;
+}
+header button {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 17px;
+  line-height: 1;
+  cursor: pointer;
+  transition: 0.14s;
+}
+header button:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-strong);
+}
+.modal-body {
+  min-height: 0;
+  padding: 16px;
+  overflow: auto;
+}
+.modal-card footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.015);
+}
+.modal-enter-active,
+.modal-leave-active {
+  transition: opacity 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.modal-enter-active .modal-card {
+  transition:
+    transform 0.36s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.24s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.modal-leave-active .modal-card {
+  transition:
+    transform 0.18s cubic-bezier(0.4, 0, 1, 1),
+    opacity 0.16s ease;
+}
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+}
+.modal-enter-from .modal-card {
+  transform: translateY(14px) scale(0.965);
+  opacity: 0;
+}
+.modal-leave-to .modal-card {
+  transform: translateY(6px) scale(0.99);
+  opacity: 0;
+}
+@media (max-width: 720px) {
+  .modal-backdrop { padding: 16px; }
+  .modal-card { max-height: calc(100dvh - 32px); }
+}
 </style>

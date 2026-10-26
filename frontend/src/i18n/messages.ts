@@ -1,13 +1,13 @@
 const zhCN = {
   common: {
-    product: 'Palworld Save Studio', version: '0.4.3-beta.1', beta: '测试版', unofficial: '非官方粉丝工具',
+    product: '幻兽帕鲁存档编辑器', version: '1.0', beta: '正式版', unofficial: '非官方粉丝工具',
     save: '保存全部修改', saving: '正在保存', cancel: '取消', confirm: '确认', close: '关闭', back: '返回',
     loading: '正在载入', retry: '重试', search: '搜索', all: '全部', none: '无', add: '新增', edit: '编辑',
     delete: '删除', duplicate: '复制', level: '等级', owner: '持有者', location: '位置', status: '状态',
     noResults: '没有符合条件的结果', pending: '正在提交修改', unsaved: '有未保存修改', saved: '修改已写入并重新核验',
   },
   nav: {
-    overview: '工作区', dashboard: 'Dashboard', players: '玩家', pals: '帕鲁', technology: '科技', items: '物品',
+    overview: '工作区', dashboard: '仪表盘', players: '玩家', pals: '帕鲁', technology: '科技', items: '物品',
     settings: '设置与关于', loadedWorld: '当前世界', changeSave: '更换存档', noWorld: '尚未打开存档',
   },
   start: {
@@ -94,8 +94,9 @@ const zhCN = {
   settings: {
     title: '设置与关于', language: '界面语言', backup: '持久备份', backupHint: '保存前在 Palworld-Save-Studio-Backup 中保留一份存档副本。', backupRequiredHint: '专用服务器模式强制备份完整核心存档，不能关闭。',
     disableBackup: '关闭持久备份？', disableBackupCopy: '关闭后，后续保存不再创建持久副本。临时事务校验不受影响。',
-    disable: '确认关闭', license: '许可证与来源', legal: 'GPL-3.0 开源软件。来源与导入基线记录见 NOTICE。',
-    disclaimer: '非官方粉丝工具，与 Pocketpair, Inc. 无关联。软件不提供任何担保。', maintainer: '维护者', maintainerName: 'RayChen200318',
+    disable: '确认关闭', license: '存档的深度静态编辑',
+    legal: '离线存档编辑器，直接修改存档文件，功能侧重精确控制与长期规划，且需停止游戏或服务器后使用。',
+    disclaimer: '非官方粉丝工具，与 Pocketpair, Inc. 无关联。软件不提供任何担保。', maintainer: '介绍', maintainerName: 'NIAN', contact: '反馈请联系 cannian984@gmail.com',
   },
   dialogs: {
     saveTitle: '保存全部修改？', target: '目标存档路径', worldId: 'WorldID', backupTarget: '备份目录', filesChanged: '将写入的文件', filesSkipped: '确认未变化并跳过的文件', serverStopped: '我已确认 PalServer 完全停止', serverStoppedHint: '软件只能核验文件是否变化，无法判断服务器进程是否仍占用存档。',
@@ -108,7 +109,7 @@ const zhCN = {
 
 const en = {
   common: {
-    product: 'Palworld Save Studio', version: '0.4.3-beta.1', beta: 'Beta', unofficial: 'Unofficial fan tool',
+    product: 'Palworld Save Editor', version: '1.0', beta: 'Release', unofficial: 'Unofficial fan tool',
     save: 'Save all changes', saving: 'Saving', cancel: 'Cancel', confirm: 'Confirm', close: 'Close', back: 'Back',
     loading: 'Loading', retry: 'Retry', search: 'Search', all: 'All', none: 'None', add: 'Add', edit: 'Edit',
     delete: 'Delete', duplicate: 'Duplicate', level: 'Level', owner: 'Owner', location: 'Location', status: 'Status',
@@ -202,8 +203,9 @@ const en = {
   settings: {
     title: 'Settings & About', language: 'Interface language', backup: 'Persistent backup', backupHint: 'Keep a save copy in Palworld-Save-Studio-Backup before committing.', backupRequiredHint: 'Dedicated-server mode always backs up the complete core save and cannot be disabled.',
     disableBackup: 'Disable persistent backups?', disableBackupCopy: 'Future saves will stop creating persistent copies. Temporary transaction validation remains enabled.',
-    disable: 'Disable', license: 'License & provenance', legal: 'GPL-3.0 software. See NOTICE for provenance and import baselines.',
-    disclaimer: 'Unofficial fan tool, not affiliated with Pocketpair, Inc. The software is provided without warranty.', maintainer: 'Maintainer', maintainerName: 'RayChen200318',
+    disable: 'Disable', license: 'Deep static save editing',
+    legal: 'An offline save editor that modifies save files directly. Focused on precise control and long-term planning. The game or server must be stopped before use.',
+    disclaimer: 'Unofficial fan tool, not affiliated with Pocketpair, Inc. The software is provided without warranty.', maintainer: 'About', maintainerName: 'NIAN', contact: 'Feedback: cannian984@gmail.com',
   },
   dialogs: {
     saveTitle: 'Save all changes?', target: 'Target save path', worldId: 'WorldID', backupTarget: 'Backup directory', filesChanged: 'Files to write', filesSkipped: 'Verified unchanged and skipped', serverStopped: 'I confirm that PalServer is fully stopped', serverStoppedHint: 'The app can verify file changes but cannot determine whether the server process still has the save open.',

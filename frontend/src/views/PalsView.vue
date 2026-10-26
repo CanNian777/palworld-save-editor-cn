@@ -83,7 +83,7 @@ async function healAll() {
     </section>
 
     <div v-if="collection.loading" class="loading"><AppIcon name="refresh" />{{ copy.common.loading }}</div>
-    <VirtualPalGrid v-else :items="collection.filteredPals" :overscan="4" />
+    <VirtualPalGrid v-else :items="collection.filteredPals" variant="list" :overscan="6" />
     <div v-if="notice" class="toast"><AppIcon name="check" :size="16" />{{ notice }}</div>
 
     <ModalDialog :open="addOpen" :title="copy.pals.addTitle" width="900px" @close="addOpen = false">

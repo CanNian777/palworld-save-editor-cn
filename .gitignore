@@ -178,3 +178,6 @@ dist/
 build/
 *.spec
 config.json
+
+# Build scratch
+_wheels/

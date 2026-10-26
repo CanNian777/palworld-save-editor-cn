@@ -21,7 +21,7 @@ const session = useSessionStore()
 const draft = useDraftStore()
 const collection = useCollectionStore()
 const items = useItemsStore()
-const brandLogoUrl = '/brand/palworld-save-studio-logo.svg'
+const brandLogoUrl = '/avatar.png'
 const copy = computed(() => messages[session.locale])
 const settingsOpen = ref(false)
 const disableBackupOpen = ref(false)
@@ -100,7 +100,7 @@ async function disableBackup() {
 
       <div class="sidebar-bottom">
         <button class="nav-item settings-button" type="button" @click="settingsOpen = true"><AppIcon name="settings" /><span>{{ copy.nav.settings }}</span></button>
-        <div class="build-info"><span>{{ copy.common.version }}</span><span>{{ copy.common.unofficial }}</span></div>
+        <div class="build-info"><span>{{ copy.common.version }}</span><span>{{ copy.common.beta }}</span></div>
       </div>
     </aside>
 
@@ -113,7 +113,7 @@ async function disableBackup() {
           <StatusPill v-else-if="session.dirty" tone="gold" dot>{{ copy.common.unsaved }}</StatusPill>
           <button class="button primary save-button" type="button" :disabled="!draft.canCommit || session.busy" @click="openSaveDialog"><AppIcon name="save" :size="16" />{{ session.busy ? copy.common.saving : copy.common.save }}</button>
           <LanguageToggle />
-          <div class="avatar">RC</div>
+          <div class="avatar"><img src="/avatar.png" alt="" /></div>
         </div>
       </header>
       <main class="page-content"><slot /></main>
@@ -138,10 +138,10 @@ async function disableBackup() {
     </ModalDialog>
 
     <ModalDialog :open="settingsOpen" :title="copy.settings.title" width="620px" @close="settingsOpen = false">
-      <div class="about-hero"><img :src="brandLogoUrl" alt="" /><div><strong>Palworld Save Studio</strong><StatusPill tone="cyan">{{ copy.common.beta }}</StatusPill></div></div>
+      <div class="about-hero"><img :src="brandLogoUrl" alt="" /><div><strong>{{ copy.common.product }}</strong><StatusPill tone="cyan">{{ copy.common.beta }}</StatusPill></div></div>
       <div class="setting-row"><div><strong>{{ copy.settings.language }}</strong><p>简体中文 / English</p></div><LanguageToggle /></div>
       <div class="setting-row"><div><strong>{{ copy.settings.backup }}</strong><p>{{ session.session.BackupRequired ? copy.settings.backupRequiredHint : copy.settings.backupHint }}</p></div><button class="toggle" :class="{ enabled: session.session.BackupEnabled }" type="button" :aria-pressed="session.session.BackupEnabled" :disabled="session.session.BackupRequired" @click="toggleBackup"><span /></button></div>
-      <div class="legal-block"><div><span>{{ copy.settings.maintainer }}</span><strong>{{ copy.settings.maintainerName }}</strong></div><h3>{{ copy.settings.license }}</h3><p>{{ copy.settings.legal }}</p><p>{{ copy.settings.disclaimer }}</p></div>
+      <div class="legal-block"><div><span>{{ copy.settings.maintainer }}</span><strong>{{ copy.settings.maintainerName }}</strong></div><h3>{{ copy.settings.license }}</h3><p>{{ copy.settings.legal }}</p><p class="legal-contact">{{ copy.settings.contact }}</p></div>
       <template #footer><button class="button primary" type="button" @click="settingsOpen = false">{{ copy.common.close }}</button></template>
     </ModalDialog>
 
@@ -166,4 +166,50 @@ async function disableBackup() {
 .commit-summary{margin-top:10px;display:grid;gap:8px}.commit-summary>div,.commit-summary section{padding:10px 12px;border:1px solid var(--border-subtle);border-radius:9px;background:var(--surface-soft)}.commit-summary span,.commit-summary strong{display:block;margin-bottom:5px;color:var(--text-faint);font-size:12px}.commit-summary code,.commit-summary small{display:block;color:var(--text-muted);font-size:11px;line-height:1.55;overflow-wrap:anywhere}.server-confirm{margin-top:12px;padding:12px;display:flex;align-items:flex-start;gap:10px;border:1px solid rgba(242,198,109,.3);border-radius:9px;background:rgba(242,198,109,.07);cursor:pointer}.server-confirm input{margin-top:3px}.server-confirm strong,.server-confirm small{display:block}.server-confirm strong{color:var(--gold-300);font-size:13px}.server-confirm small{margin-top:3px;color:var(--text-muted);font-size:12px;line-height:1.5}.toggle:disabled{opacity:.65;cursor:not-allowed}
 @media(max-width:1366px){.app-frame{grid-template-columns:200px minmax(0,1fr)}.sidebar{padding-left:12px;padding-right:12px}.page-content{padding:20px 20px 28px}.topbar{padding:0 20px}.search-box{width:205px}.topbar-actions :deep(.status-pill){display:none}}
 @media(max-width:1180px){.search-box{display:none}.save-button{padding:0 11px}.save-button .app-icon{display:none}}
+
+/* —— 统一材质：收敛装饰，降低噪音 —— */
+.sidebar{background:rgba(255,255,255,.02);border-right:1px solid var(--border-subtle);box-shadow:none;padding:18px 12px 14px}
+.sidebar :deep(.brand-lockup){padding:0 6px 16px;border-bottom:1px solid var(--border-subtle)}
+.main-nav{margin-top:14px;gap:2px}
+.nav-label{padding:10px 10px 6px;font-size:10px;letter-spacing:.16em;text-transform:uppercase}
+.nav-item{min-height:36px;padding:0 10px;gap:10px;border-radius:9px;font-size:12.5px;font-weight:520}
+.nav-item:hover{background:rgba(255,255,255,.05);color:var(--text-strong)}
+.nav-item.active{color:var(--cyan-300);border-color:transparent;background:var(--surface-selected)}
+.world-card{margin-top:16px;padding:9px 10px;border:1px solid var(--border-subtle);border-radius:10px;background:var(--surface);box-shadow:none}
+.world-card>strong{font-size:11px;font-family:var(--mono);margin:8px 0 4px}
+.world-heading{font-size:10.5px}
+.world-source{font-size:10.5px}
+.change-save{margin-top:8px;padding-top:8px;color:var(--text-muted);font-size:10.5px}
+.settings-button{margin-bottom:8px}
+.build-info{font-size:10px;padding:0 4px;display:flex;gap:6px;align-items:center}
+.build-info span:last-child{background:var(--surface-selected);color:var(--cyan-300);padding:1px 5px;border-radius:4px}
+.topbar{height:62px;padding:0 24px;background:rgba(255,255,255,.018);border-bottom:1px solid var(--border-subtle);backdrop-filter:blur(var(--glass-blur))}
+.page-heading span{color:var(--text-faint);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.page-heading h1{font-size:22px;font-weight:700;letter-spacing:-.02em}
+.topbar-actions{gap:7px}
+.search-box{width:240px;height:32px;border-radius:8px;background:rgba(0,0,0,.22);border-color:var(--border-subtle)}
+.search-box input{font-size:12px}
+.save-button{height:32px;padding:0 13px;font-size:12.5px}
+.avatar{width:30px;height:30px;flex-shrink:0;display:block;padding:0;border:1px solid var(--border-subtle);border-radius:8px;background:rgba(255,255,255,.06);overflow:hidden}
+.avatar img{width:30px;height:30px;object-fit:cover;display:block}
+.page-content{padding:22px 24px 32px}
+/* 设置与关于 */
+.about-hero{display:flex;align-items:center;gap:11px;padding:0 0 14px;margin-bottom:2px;border-bottom:1px solid var(--border-subtle)}
+.about-hero img{width:38px;height:38px;border-radius:10px}
+.about-hero>div{display:flex;align-items:center;gap:8px}
+.about-hero strong{font-size:13.5px;font-weight:660;color:var(--text-strong)}
+.setting-row{display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--border-subtle)}
+.setting-row strong{font-size:12.5px;color:var(--text-strong)}
+.setting-row p{margin-top:2px;color:var(--text-faint);font-size:10.5px;line-height:1.55}
+.legal-block{margin-top:12px;padding:13px 14px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:var(--surface)}
+.legal-block>div{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:9px;border-bottom:1px solid var(--border-subtle)}
+.legal-block span{color:var(--text-faint);font-size:10.5px}
+.legal-block strong{font-size:11.5px;color:var(--text)}
+.legal-block h3{margin:10px 0 5px;font-size:12px;font-weight:640;color:var(--text-strong)}
+.legal-block p{margin:0;color:var(--text-faint);font-size:10.5px;line-height:1.65}
+.legal-contact{margin-top:9px!important;padding-top:9px;border-top:1px solid var(--border-subtle);color:var(--cyan-300)!important;font-family:var(--mono);font-size:10.5px!important;letter-spacing:.01em}
+.toggle{width:36px;height:20px;border-radius:999px;background:rgba(255,255,255,.10);border:1px solid var(--border-subtle);position:relative;transition:.18s;padding:0}
+.toggle span{position:absolute;top:1px;left:1px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.18s}
+.toggle.enabled{background:var(--cyan-300);border-color:transparent}
+.toggle.enabled span{transform:translateX(16px);background:#04130e}
 </style>
