@@ -34,24 +34,39 @@ LEVEL_NORMAL = 4
 _DLL_NAME = "oo2core_8_win64.dll"
 
 _FALLBACK_PATHS = (
-    r"E:\WeGameApps\rail_apps\DeltaForce(2001918)\DeltaForce\Binaries\Win64\oo2core_8_win64.dll",
     r"C:\Program Files\Epic Games\Fortnite\FortniteGame\Binaries\Win64\oo2core_8_win64.dll",
     r"C:\Program Files (x86)\Steam\steamapps\common\Palworld\Pal\Binaries\Win64\oo2core_9_win64.dll",
 )
 
-_SEARCH_ROOTS = (
-    r"E:\SteamLibrary\steamapps\common",
-    r"D:\steam\steamapps\common",
-    r"C:\Program Files (x86)\Steam\steamapps\common",
-    r"C:\Program Files\Epic Games",
-    r"E:\WeGameApps\rail_apps",
-)
+
+def _candidate_roots() -> list[str]:
+    """按盘符生成常见游戏库目录，避免把某台机器的路径写死。"""
+    import string
+
+    roots: list[str] = []
+    for letter in string.ascii_uppercase:
+        drive = f"{letter}:\\"
+        if not os.path.isdir(drive):
+            continue
+        for relative in (
+            r"SteamLibrary\steamapps\common",
+            r"steam\steamapps\common",
+            r"Steam\steamapps\common",
+            r"Program Files (x86)\Steam\steamapps\common",
+            r"Program Files\Steam\steamapps\common",
+            r"Program Files\Epic Games",
+            r"Program Files (x86)\Epic Games",
+            r"WeGameApps\rail_apps",
+            r"Games",
+        ):
+            candidate = os.path.join(drive, relative)
+            if os.path.isdir(candidate):
+                roots.append(candidate)
+    return roots
 
 
 def _scan_roots(max_depth: int = 6) -> Optional[str]:
-    for root in _SEARCH_ROOTS:
-        if not os.path.isdir(root):
-            continue
+    for root in _candidate_roots():
         base_depth = root.rstrip("\\/").count(os.sep)
         for dirpath, dirnames, filenames in os.walk(root):
             if dirpath.count(os.sep) - base_depth >= max_depth:
