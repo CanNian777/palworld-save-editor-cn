@@ -181,3 +181,9 @@ config.json
 
 # Build scratch
 _wheels/
+
+# Õï¶ÏÓÃÁÙÊ±Êä³ö
+_err.txt
+_out.txt
+*.spec
+

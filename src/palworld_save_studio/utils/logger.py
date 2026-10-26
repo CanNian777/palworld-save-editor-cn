@@ -1,5 +1,6 @@
 from functools import wraps
 import logging
+import sys
 from datetime import datetime
 import copy
 from pathlib import Path
@@ -62,11 +63,14 @@ class Logger:
             file_handler.setFormatter(file_formatter)
             self.logger.addHandler(file_handler)
 
-            console_formatter = ColorConsoleFormatter()
-            console_handler = logging.StreamHandler()
-            console_handler.setLevel(level)
-            console_handler.setFormatter(console_formatter)
-            self.logger.addHandler(console_handler)
+            # 打包为 --windowed 的 exe 时没有控制台，sys.stderr 为 None，
+            # 此时只保留文件日志，避免 StreamHandler 写入 None 而崩溃。
+            if sys.stderr is not None:
+                console_formatter = ColorConsoleFormatter()
+                console_handler = logging.StreamHandler()
+                console_handler.setLevel(level)
+                console_handler.setFormatter(console_formatter)
+                self.logger.addHandler(console_handler)
 
     def newline(self):
         print("")

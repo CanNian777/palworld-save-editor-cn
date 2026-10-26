@@ -1,3 +1,29 @@
+import io
+import os
+import sys
+
+# ---------------------------------------------------------------------------
+# 必须在任何业务模块之前执行：中文 Windows 控制台默认 GBK，
+# palworld_save_tools / loguru 会输出 'ℹ' 等符号，GBK 无法编码，
+# 异常会被包装成「存档解析失败」。打包成 --windowed 的 exe 时
+# stdout/stderr 还可能是 None，一并兜底。
+# ---------------------------------------------------------------------------
+os.environ.setdefault("PYTHONIOENCODING", "utf-8")
+
+for _stream_name in ("stdout", "stderr"):
+    _stream = getattr(sys, _stream_name, None)
+    if _stream is None:
+        setattr(
+            sys,
+            _stream_name,
+            io.TextIOWrapper(io.BytesIO(), encoding="utf-8", errors="replace"),
+        )
+    else:
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 import argparse
 import traceback
 
