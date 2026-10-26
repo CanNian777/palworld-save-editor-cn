@@ -1,62 +1,34 @@
-# Full Source Code and Reproducible Windows Build Guide
+# 从源码构建
 
-This document identifies the complete source corresponding to the published
-Palworld Save Studio `0.4.2` release and explains how to build and verify the
-Windows application from a clean checkout.
+本文说明如何从干净的源码构建「幻兽帕鲁存档编辑器 1.0」，包括开发运行、前端构建和打包为 Windows 可执行文件。
 
-Palworld Save Studio is a standalone desktop save editor. It is not injected
-into Palworld, does not replace game files, and is not an in-game DLL, plugin,
-or script mod. The application runs locally and edits a user-selected save.
+本项目是独立的桌面存档编辑器，不注入游戏进程、不替换游戏文件，也不是游戏内 DLL 或脚本模组。程序在本地运行，只读写用户选择的存档目录。
 
-## Canonical source for version 0.4.2
+## 源码结构
 
-- Repository: <https://github.com/RayChen200318/palworld-save-studio>
-- Release tag: [`0.4.2`](https://github.com/RayChen200318/palworld-save-studio/tree/0.4.2)
-- Exact release commit: [`945813a221a335f5d894f0d18fa4ed1682a14883`](https://github.com/RayChen200318/palworld-save-studio/commit/945813a221a335f5d894f0d18fa4ed1682a14883)
-- Complete source ZIP: <https://github.com/RayChen200318/palworld-save-studio/archive/refs/tags/0.4.2.zip>
-- Complete source tarball: <https://github.com/RayChen200318/palworld-save-studio/archive/refs/tags/0.4.2.tar.gz>
-- Published binaries: <https://github.com/RayChen200318/palworld-save-studio/releases/tag/0.4.2>
-
-GitHub generates the ZIP and tarball directly from the tagged commit. They
-contain all project-owned source code and assets used to build the release.
-This guide was added after the `0.4.2` tag as documentation only; use the tag
-and commit above when reviewing or reproducing the released executable.
-
-## Source layout
-
-| Path | Contents |
+| 路径 | 内容 |
 | --- | --- |
-| `src/palworld_save_studio/` | Python application, Flask API, save-editing services, desktop entry point, offline catalogs, and runtime assets |
-| `frontend/src/` | Vue 3 and TypeScript user interface, Pinia stores, typed API client, styles, and frontend tests |
-| `frontend/pnpm-lock.yaml` | Locked JavaScript dependency graph |
-| `tests/` | Python unit, regression, save round-trip, and release checks |
-| `build_executable.ps1` | Complete Windows test, build, PyInstaller, smoke-test, archive, and checksum pipeline |
-| `.github/workflows/ci.yml` | Public Windows CI configuration using Node.js 20 and Python 3.12 |
-| `.github/workflows/release.yml` | Tagged-release packaging workflow |
-| `requirements.txt` | Pinned Python runtime and build dependencies |
-| `LICENSE` | GPL-3.0 license text |
-| `NOTICE` | Upstream attribution, imported-code provenance, and data-source notices |
+| `src/palworld_save_studio/` | Python 应用、Flask API、存档编辑服务、桌面入口、离线目录数据 |
+| `src/palworld_save_studio/webui/` | 前端构建产物，由构建流程生成，不手工编辑 |
+| `src/palworld_save_studio/ooz_compat.py` | Oodle 压缩兼容层（见下文「已知问题」） |
+| `src/palworld_save_studio/avatar.ico` | 窗口图标，打包时注入 |
+| `frontend/src/` | Vue 3 + TypeScript 界面、Pinia store、API 客户端、样式 |
+| `frontend/pnpm-lock.yaml` | 前端依赖锁定文件 |
+| `tests/` | Python 单元测试与存档往返测试 |
+| `build_executable.ps1` | 完整构建脚本（前端 → 测试 → PyInstaller → 归档 → 校验和） |
+| `requirements.txt` | Python 依赖 |
+| `LICENSE` / `NOTICE` | GPL-3.0 许可证与来源声明 |
 
-The compiled frontend is generated during the build and copied to
-`src/palworld_save_studio/webui/`; it is not an additional closed-source
-component. There are no private source repositories, remote application
-services, or proprietary build tools required to produce the application.
+## 环境要求
 
-## Prerequisites
-
-Build on Windows 10 or Windows 11 x64 with:
-
+- Windows 10 / 11 x64
+- Python 3.11 或更高（推荐 3.12）
+- Node.js 20 或更高，且 `corepack` 可用
 - Git
-- PowerShell
-- Python 3.11 or newer on `PATH` (`3.12` is recommended because public CI uses it)
-- Node.js 20 or newer with the `corepack` command available
-- Internet access while installing the pinned dependencies
+- 安装依赖时需要联网
+- **不需要** Palworld 本体、游戏存档或任何签名证书
 
-The frontend declares `pnpm 9.15.9`, and Corepack selects that version from
-`frontend/package.json`. No credentials, signing certificate, Palworld
-installation, or game save are required to compile and test the application.
-
-Confirm the tools are available from PowerShell:
+在 PowerShell 中确认：
 
 ```powershell
 git --version
@@ -65,103 +37,140 @@ node --version
 corepack --version
 ```
 
-If the Python executable is named `python3`, the build script detects it
-automatically.
+前端通过 `package.json` 的 `packageManager` 字段固定在 **pnpm 9.15.9**，Corepack 会自动选用该版本。
 
-## Clean build procedure
-
-Run the following commands in PowerShell:
+## 快速构建
 
 ```powershell
-git clone https://github.com/RayChen200318/palworld-save-studio.git
-cd palworld-save-studio
-git checkout --detach 0.4.2
-git rev-parse HEAD
-```
-
-The last command must print:
-
-```text
-945813a221a335f5d894f0d18fa4ed1682a14883
-```
-
-Then run the complete build pipeline:
-
-```powershell
+git clone https://github.com/CanNian777/palworld-save-editor-cn.git
+cd palworld-save-editor-cn
 .\build_executable.ps1
 ```
 
-The script performs these steps without requiring manual source changes:
+脚本会依次完成：
 
-1. Installs the frontend dependency graph from `frontend/pnpm-lock.yaml` with
-   `corepack pnpm install --frozen-lockfile`.
-2. Runs the Vitest frontend tests and the TypeScript/Vite production build.
-3. Copies the generated WebUI into the Python package.
-4. Creates a fresh Python virtual environment in `venv` and installs the
-   pinned Python dependencies.
-5. Installs `pyooz` from commit
-   `9af53d1faaa2f9a7dafe6d6caea117c762dc71d9` and
-   `palworld-save-tools` from commit
-   `790e0bcf7bacef47b048e110066617a8fbb40041`.
-6. Runs the complete Python test suite with `unittest`.
-7. Packages `src/palworld_save_studio/__main__.py` as a one-file Windows
-   executable with PyInstaller.
-8. Runs `Palworld-Save-Studio.exe --help` as an executable smoke test.
-9. Creates the distribution ZIP and SHA-256 checksum files.
+1. `corepack pnpm install --frozen-lockfile` 安装前端依赖
+2. 运行前端测试与 TypeScript 类型检查
+3. `corepack pnpm build` 生成前端产物
+4. 把 `frontend/dist` 复制到 `src/palworld_save_studio/webui/`
+5. 新建 `venv` 并安装 Python 依赖
+6. 运行 Python 测试
+7. 用 PyInstaller 打包为单文件 exe
+8. 生成分发 ZIP 与 SHA-256 校验和
 
-## Build outputs
-
-After a successful build, `dist` contains:
+产物位于 `dist/`：
 
 ```text
-dist\Palworld-Save-Studio.exe
-dist\Palworld-Save-Studio.exe.sha256
-dist\Palworld-Save-Studio-Windows-x64.zip
-dist\Palworld-Save-Studio-Windows-x64.zip.sha256
+dist\PalworldSaveEditor.exe
+dist\PalworldSaveEditor.exe.sha256
+dist\PalworldSaveEditor-Windows-x64.zip
+dist\PalworldSaveEditor-Windows-x64.zip.sha256
 ```
 
-The ZIP contains the executable, its checksum, both English and Chinese
-README files, `LICENSE`, and `NOTICE`.
+> **注意**：脚本第 5 步会从 Git 安装 `pyooz`，该包在部分环境下需要 C++ 编译工具链。如果这一步失败，请改用下面的手动流程。
 
-Verify the locally built application and checksums with:
+## 手动构建
+
+### 1. 后端依赖
 
 ```powershell
-.\dist\Palworld-Save-Studio.exe --help
-Get-FileHash .\dist\Palworld-Save-Studio.exe -Algorithm SHA256
-Get-Content .\dist\Palworld-Save-Studio.exe.sha256
-Get-FileHash .\dist\Palworld-Save-Studio-Windows-x64.zip -Algorithm SHA256
-Get-Content .\dist\Palworld-Save-Studio-Windows-x64.zip.sha256
+python -m venv .venv
+.venv\Scripts\activate
+
+pip install -r requirements.txt
+pip install loguru orjson
 ```
 
-The checksum recorded beside each local artifact must match the checksum
-calculated for that artifact. A fresh PyInstaller build is not promised to be
-byte-for-byte identical to the published binary because packaging metadata,
-absolute build paths, and tool-environment details can differ. The tagged
-source, locked dependencies, automated tests, and public Windows workflow are
-the source-to-binary verification path.
+`pyooz` 若编译失败（`Failed building wheel for pyooz`），改用预编译 wheel：
 
-## Independent frontend and test commands
+```powershell
+pip install path\to\pyooz-0.0.8-cp38-abi3-win_amd64.whl
+pip install --no-deps palworld-save-tools
+```
 
-The frontend can be checked independently:
+注意模块名是 `ooz`，不是 `pyooz`。
+
+### 2. 前端
 
 ```powershell
 cd frontend
-corepack pnpm install --frozen-lockfile
-corepack pnpm test
+corepack pnpm install
 corepack pnpm build
 ```
 
-For the complete Python environment and regression suite, use
-`build_executable.ps1`; it recreates the same dependency installation and test
-sequence used by public CI.
+把产物复制进 Python 包：
 
-## License and third-party source
+```powershell
+Copy-Item 'dist\*' '..\src\palworld_save_studio\webui\' -Recurse -Force
+```
 
-Palworld Save Studio is distributed under GPL-3.0. Project provenance and
-third-party data attribution are documented in [`NOTICE`](NOTICE). Third-party
-libraries are not copied into this repository; their exact package versions or
-Git commits are pinned by the lockfile, `requirements.txt`, and the build
-script so their corresponding upstream source can be audited.
+### 3. 开发运行
 
-Questions about the source or build can be filed at
-<https://github.com/RayChen200318/palworld-save-studio/issues>.
+```powershell
+cd ..
+python -m palworld_save_studio --mode gui --nocli
+```
+
+后端会监听 `127.0.0.1:58080`，桌面窗口由 pywebview 承载。
+
+### 4. 打包 exe
+
+```powershell
+python -m PyInstaller --clean --noconfirm --onefile --windowed `
+  --icon 'src\palworld_save_studio\avatar.ico' `
+  --add-data 'src\palworld_save_studio\webui;webui' `
+  --add-data 'src\palworld_save_studio\assets;assets' `
+  --add-data 'src\palworld_save_studio\avatar.ico;.' `
+  --hidden-import 'ooz' `
+  --paths 'src' `
+  --name 'PalworldSaveEditor' `
+  'src\palworld_save_studio\__main__.py'
+```
+
+关键参数说明：
+
+- `--windowed`：不显示控制台窗口
+- `--add-data ... avatar.ico;.`：窗口图标通过 `ASSETS_PATH / "avatar.ico"` 读取，必须放进包内根目录
+- `--hidden-import ooz`：`ooz` 是运行时动态导入的，PyInstaller 不会自动发现
+- `--paths src`：项目使用 `src` 布局，不改用可编辑安装时需要显式指定
+
+## 已知问题
+
+### 保存时报 `module 'ooz' has no attribute 'compress'`
+
+pip 上的 `pyooz` 只有 `decompress`，没有 `compress`，而保存需要重新压缩。本项目通过 `src/palworld_save_studio/ooz_compat.py` 在导入 `palworld_save_tools` 之前注册一个同名的 `ooz` 模块，用系统里的 `oo2core_*_win64.dll` 提供压缩：
+
+- `decompress` → `OodleLZ_Decompress`
+- `compress` → `OodleLZ_Compress`（Kraken + Normal）
+
+**本项目不分发 Oodle 二进制**。请从本机已安装的其他 Unreal 引擎游戏取得该 DLL（Palworld 自身的 `Pal\Binaries\Win64\`、Delta Force、Fortnite 等），然后：
+
+```powershell
+$env:PALFORGE_OODLE = 'D:\path\to\oo2core_8_win64.dll'
+```
+
+未设置时程序会自动搜索常见游戏安装目录；找不到则打开存档仍可用，但保存会失败并给出提示。
+
+### exe 打开存档报「解析失败」
+
+中文 Windows 控制台默认 GBK，而 `palworld_save_tools` / `loguru` 会输出 `ℹ` 等符号，编码失败会被包装成存档解析错误。`__main__.py` 已在最开始把 `stdout` / `stderr` 重配置为 UTF-8 并对打包后为 `None` 的情况做了兜底，修改入口文件时不要把这些代码移到业务导入之后。
+
+### 前端产物不生效
+
+Flask 只服务 `src/palworld_save_studio/webui/`，不是 `frontend/dist/`。改完前端必须复制过去并重启后端。
+
+## 验证
+
+```powershell
+.\dist\PalworldSaveEditor.exe --help
+Get-FileHash .\dist\PalworldSaveEditor.exe -Algorithm SHA256
+Get-Content .\dist\PalworldSaveEditor.exe.sha256
+```
+
+PyInstaller 不保证两次构建字节完全一致（打包元数据、绝对路径会影响结果），因此以源码、锁定依赖和测试作为可复现依据，而不是比对二进制哈希。
+
+## 许可
+
+本项目基于 [Palworld Save Studio](https://github.com/RayChen200318/palworld-save-studio) 修改，遵循 GPL-3.0，详见 [`LICENSE`](LICENSE) 与 [`NOTICE`](NOTICE)。
+
+按 GPL-3.0 要求，分发可执行文件时必须同时提供完整源码，并保留原有版权声明。

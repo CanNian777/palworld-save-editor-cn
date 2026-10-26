@@ -128,6 +128,8 @@ corepack pnpm build
 .\build_executable.ps1
 ```
 
+完整的构建流程、手动分步命令和常见问题（pyooz 编译失败、Oodle 运行时、GBK 编码）见 [SOURCE_BUILD_GUIDE.md](SOURCE_BUILD_GUIDE.md)。
+
 ---
 
 ## 已知限制

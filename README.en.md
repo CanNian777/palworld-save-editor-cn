@@ -119,9 +119,13 @@ Output goes to `frontend/dist`; copy it into `src/palworld_save_studio/webui/` f
 
 ## Package as exe
 
+The repository ships `build_executable.ps1`:
+
 ```powershell
 .\build_executable.ps1
 ```
+
+See [SOURCE_BUILD_GUIDE.md](SOURCE_BUILD_GUIDE.md) for the full pipeline, manual step-by-step commands, and troubleshooting.
 
 ---
 
