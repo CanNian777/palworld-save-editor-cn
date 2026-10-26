@@ -40,7 +40,9 @@ def setup_config_from_args():
     except:
         LOGGER.warning(f"Failed Loading Config from {CONFIG_PATH}: {traceback.format_exc()}")
 
-    parser = argparse.ArgumentParser(description="Palworld Save Studio for Windows.")
+    parser = argparse.ArgumentParser(
+        description="幻兽帕鲁存档编辑器 1.0 — 离线 Palworld 存档编辑器 / Offline Palworld save editor.",
+    )
 
     parser.add_argument('--lang', type=str, help=f'Language for the application. options: {", ".join(DataProvider.get_i18n_options())}', default=Config.i18n)
     parser.add_argument('--path', type=str, help='Path to the save folder.', default=Config.path)

@@ -62,20 +62,25 @@
 ## 安装
 
 ```bash
-git clone <this-repo>
-cd <repo>
+git clone https://github.com/CanNian777/palworld-save-editor-cn.git
+cd palworld-save-editor-cn
 
 python -m venv .venv
 .venv\Scripts\activate
 
 pip install -r requirements.txt
+pip install -e .
 ```
+
+`pip install -e .` 是必需的：`python -m palworld_save_studio` 依赖已安装的包（editable 模式不会复制源码，改动即时生效）。
+
+> `requirements.txt` 会从 Git 安装 `palworld-save-tools`，它会连带安装 `pyooz`。**没有 C++ 编译工具链时这一步会失败**（`Failed building wheel for pyooz`），替代做法见下节。
 
 ### 关于 Oodle 运行时
 
 保存存档需要重新压缩，依赖 Unreal 的 Oodle 库。**本项目不分发该二进制文件。**
 
-请从本机已安装的其他 Unreal 引擎游戏中取得 `oo2core_*_win64.dll`（例如 Palworld 自身的 `Pal\Binaries\Win64\`、Delta Force、Fortnite 等），然后任选一种方式：
+请从已安装的其他 Unreal 引擎游戏中取得 `oo2core_*_win64.dll`（例如 Palworld 自身的 `Pal\Binaries\Win64\`、Delta Force、Fortnite 等），然后任选一种方式：
 
 1. 设置环境变量指向它：
 
@@ -85,7 +90,19 @@ set PALFORGE_OODLE=D:\path\to\oo2core_8_win64.dll
 
 2. 或者让程序自动搜索常见游戏安装路径。
 
-未找到该文件时，打开存档仍可用，但保存会失败并给出明确提示。
+未找到该文件时，打开存档仍可用，但保存会失败并给出提示。
+
+### 如果 pyooz 编译失败
+
+用预编译 wheel 绕过编译：
+
+```powershell
+pip install path\to\pyooz-0.0.8-cp38-abi3-win_amd64.whl
+pip install --no-deps palworld-save-tools
+pip install loguru orjson
+```
+
+注意模块名是 `ooz` 而不是 `pyooz`。详见 [SOURCE_BUILD_GUIDE.md](SOURCE_BUILD_GUIDE.md)。
 
 ---
 
@@ -100,9 +117,12 @@ python -m palworld_save_studio --mode gui --nocli
 | 参数 | 说明 |
 |---|---|
 | `--mode gui` | 以桌面窗口运行（默认） |
-| `--mode web` | 只启动后端，用浏览器访问 |
+| `--mode cli` | 命令行交互模式 |
 | `--path` | 直接指定存档路径 |
-| `--nocli` | 不启动命令行交互 |
+| `--port` | 本地 UI 端口，默认 `58080` |
+| `--password` | 为本地 UI 设置访问密码 |
+| `--lang` | 界面语言：`zh-CN` / `en` / `ja` / `fr`（前端目前提供中文与英文两套文案） |
+| `--nocli` | GUI 模式下不启动交互式命令行 |
 
 ---
 

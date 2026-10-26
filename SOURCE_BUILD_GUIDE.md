@@ -104,14 +104,17 @@ corepack pnpm build
 Copy-Item 'dist\*' '..\src\palworld_save_studio\webui\' -Recurse -Force
 ```
 
-### 3. 开发运行
+### 3. 安装本项目并运行
 
 ```powershell
 cd ..
+pip install -e .
 python -m palworld_save_studio --mode gui --nocli
 ```
 
-后端会监听 `127.0.0.1:58080`，桌面窗口由 pywebview 承载。
+`pip install -e .` 不能省略：项目是 `src` 布局，`python -m palworld_save_studio` 依赖已安装的包。editable 模式下改动源码会立即生效，不需要重装。
+
+后端会监听 `127.0.0.1:58080`，桌面窗口由 pywebview 承载。加 `--port` 可以改端口，加 `--password` 可以设置本地访问密码。
 
 ### 4. 打包 exe
 

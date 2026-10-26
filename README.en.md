@@ -57,14 +57,19 @@ Supports both local saves and dedicated-server `World` directories.
 ## Install
 
 ```bash
-git clone <this-repo>
-cd <repo>
+git clone https://github.com/CanNian777/palworld-save-editor-cn.git
+cd palworld-save-editor-cn
 
 python -m venv .venv
 .venv\Scripts\activate
 
 pip install -r requirements.txt
+pip install -e .
 ```
+
+`pip install -e .` is required — `python -m palworld_save_studio` needs the package to be installed (editable mode means source edits take effect immediately).
+
+> `requirements.txt` installs `palworld-save-tools` from Git, which pulls in `pyooz`. **That build fails without a C++ toolchain** (`Failed building wheel for pyooz`). See the workaround below.
 
 ### About the Oodle runtime
 
@@ -82,6 +87,18 @@ set PALFORGE_OODLE=D:\path\to\oo2core_8_win64.dll
 
 Without it, opening saves still works, but saving will fail with an explicit message.
 
+### If pyooz fails to build
+
+Use a prebuilt wheel to skip compilation:
+
+```powershell
+pip install path\to\pyooz-0.0.8-cp38-abi3-win_amd64.whl
+pip install --no-deps palworld-save-tools
+pip install loguru orjson
+```
+
+The module name is `ooz`, not `pyooz`. See [SOURCE_BUILD_GUIDE.md](SOURCE_BUILD_GUIDE.md) for details.
+
 ---
 
 ## Run
@@ -95,9 +112,12 @@ Pick a save folder (must contain `Level.sav` and a `Players` directory), or use 
 | Flag | Meaning |
 |---|---|
 | `--mode gui` | Desktop window (default) |
-| `--mode web` | Backend only, open in a browser |
+| `--mode cli` | Interactive command-line mode |
 | `--path` | Point directly at a save folder |
-| `--nocli` | Skip the interactive CLI |
+| `--port` | Local UI port, default `58080` |
+| `--password` | Require a password for the local UI |
+| `--lang` | UI language: `zh-CN` / `en` / `ja` / `fr` (the frontend currently ships Chinese and English copy) |
+| `--nocli` | Do not start the interactive CLI in GUI mode |
 
 ---
 

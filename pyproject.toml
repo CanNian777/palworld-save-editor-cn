@@ -3,10 +3,11 @@ requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "palworld-save-studio"
+name = "palworld-save-editor-cn"
 description = "幻兽帕鲁存档编辑器 1.0 — 基于 Palworld Save Studio 的离线存档编辑器"
 authors = [
     { name = "RayChen200318" },
+    { name = "NIAN", email = "cannian984@gmail.com" },
 ]
 keywords = ["palworld", "save-editor", "windows", "pal"]
 license = {file = "LICENSE"}
@@ -34,8 +35,22 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/RayChen200318/palworld-save-studio"
-Documentation = "https://github.com/RayChen200318/palworld-save-studio#readme"
-Repository = "https://github.com/RayChen200318/palworld-save-studio.git"
-Issues = "https://github.com/RayChen200318/palworld-save-studio/issues"
-Changelog = "https://github.com/RayChen200318/palworld-save-studio/releases"
+Homepage = "https://github.com/CanNian777/palworld-save-editor-cn"
+Repository = "https://github.com/CanNian777/palworld-save-editor-cn.git"
+Issues = "https://github.com/CanNian777/palworld-save-editor-cn/issues"
+Upstream = "https://github.com/RayChen200318/palworld-save-studio"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["palworld_save_studio*"]
+
+[tool.setuptools.package-data]
+palworld_save_studio = [
+    "webui/**/*",
+    "assets/**/*",
+    "avatar.ico",
+]
